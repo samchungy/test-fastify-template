@@ -26,6 +26,10 @@ export const responseLoggingHook: onResponseAsyncHookHandler = async (
   req,
   reply,
 ) => {
+  if (reply.statusCode < 400) {
+    return;
+  }
+
   logger.info(
     {
       status: reply.statusCode,

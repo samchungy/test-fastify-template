@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsync, FastifyPluginCallback } from 'fastify';
 
 import { getJobsHandler } from './getJobs';
 import { postJobHandler } from './postJob';
@@ -7,4 +7,10 @@ import { postJobHandler } from './postJob';
 export const jobRouter: FastifyPluginAsync = async (fastify, _opts) => {
   fastify.get('/', getJobsHandler);
   fastify.post('/', postJobHandler);
+};
+
+export const jobRouter2: FastifyPluginCallback = (fastify, _opts, done) => {
+  fastify.get('/', getJobsHandler);
+  fastify.post('/', postJobHandler);
+  done();
 };

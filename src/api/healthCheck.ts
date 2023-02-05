@@ -6,4 +6,5 @@ import { RouteHandler } from 'fastify';
  * The deployment environment calls this endpoint to see if the container is
  * unhealthy and needs to be recycled.
  */
-export const healthCheckHandler: RouteHandler = (_request) => '';
+export const healthCheckHandler: RouteHandler = (_req, reply) =>
+  reply.code(200).send('');

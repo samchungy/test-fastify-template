@@ -5,8 +5,8 @@ import { smokeTestJobStorage } from 'src/storage/jobs';
 /**
  * Tests connectivity to ensure appropriate access and network configuration.
  */
-export const smokeTestHandler: RouteHandler = async (_req) => {
+export const smokeTestHandler: RouteHandler = async (_req, reply) => {
   await Promise.all([smokeTestJobStorage()]);
 
-  return 'Smoke test passed';
+  return reply.code(200).send('Smoke test passed');
 };

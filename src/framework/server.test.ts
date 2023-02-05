@@ -5,7 +5,10 @@ import { metricsClient } from 'src/testing/metrics';
 import { agentFromPlugins } from 'src/testing/server';
 import { chance } from 'src/testing/types';
 
-const middleware = jest.fn<void, Parameters<RouteHandler>>();
+const middleware = jest.fn<
+  ReturnType<RouteHandler>,
+  Parameters<RouteHandler>
+>();
 
 // eslint-disable-next-line @typescript-eslint/require-await
 const nestedRouter: FastifyPluginAsync = async (fastify, _opts) => {
@@ -97,10 +100,9 @@ describe('createApp', () => {
   it('handles returned client error', async () => {
     const message = chance.sentence();
 
-    middleware.mockImplementation((req, reply) => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      reply.code(400).send(message);
-    });
+    middleware.mockImplementation((_req, reply) =>
+      reply.code(400).send(message),
+    );
     const agent = await agentFromPlugins(router);
 
     await agent

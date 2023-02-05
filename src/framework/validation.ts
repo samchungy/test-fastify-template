@@ -1,7 +1,7 @@
-import { ErrorMiddleware } from 'seek-koala';
+import { FastifyRequest } from 'fastify';
 import { z } from 'zod';
 
-import { Context } from 'src/types/koa';
+import { JsonResponse } from './error';
 
 /**
  * Converts a `ZodError` into an `invalidFields` object
@@ -41,23 +41,17 @@ export const validate = <
   Def extends z.ZodTypeDef = z.ZodTypeDef,
   Input = Output,
 >({
-  ctx,
   input,
   schema,
 }: {
-  ctx: Context;
   input: unknown;
   schema: z.ZodSchema<Output, Def, Input>;
 }): Output => {
   const parseResult = schema.safeParse(input);
   if (parseResult.success === false) {
-    return ctx.throw(
-      422,
-      new ErrorMiddleware.JsonResponse('Input validation failed', {
-        message: 'Input validation failed',
-        invalidFields: parseInvalidFieldsFromError(parseResult.error),
-      }),
-    );
+    throw new JsonResponse(422, 'Input validation failed', {
+      invalidFields: parseInvalidFieldsFromError(parseResult.error),
+    });
   }
   return parseResult.data;
 };
@@ -67,11 +61,10 @@ export const validateRequestBody = <
   Def extends z.ZodTypeDef = z.ZodTypeDef,
   Input = Output,
 >(
-  ctx: Context,
+  req: FastifyRequest,
   schema: z.ZodSchema<Output, Def, Input>,
 ): Output =>
   validate<Output, Def, Input>({
-    ctx,
-    input: ctx.request.body as unknown,
+    input: req.body,
     schema,
   });

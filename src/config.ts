@@ -11,7 +11,7 @@ interface Config {
   port?: number;
 }
 
-type Environment = typeof environments[number];
+type Environment = (typeof environments)[number];
 
 const dev = '<%- devGantryEnvironmentName %>';
 const prod = '<%- prodGantryEnvironmentName %>';
@@ -26,6 +26,7 @@ const configs: Record<Environment, () => Omit<Config, 'environment'>> = {
     logLevel: 'debug',
     name: '<%- serviceName %>',
     version: 'local',
+    port: 6000,
   }),
 
   test: () => ({

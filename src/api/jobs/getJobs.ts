@@ -1,9 +1,10 @@
+import { RouteHandler } from 'fastify';
+
 import { logger } from 'src/framework/logging';
 import { metricsClient } from 'src/framework/metrics';
 import * as storage from 'src/storage/jobs';
-import { Middleware } from 'src/types/koa';
 
-export const getJobsHandler: Middleware = async (ctx) => {
+export const getJobsHandler: RouteHandler = async (_req, reply) => {
   const jobs = await storage.readJobs();
 
   // no PII in these jobs
@@ -11,5 +12,5 @@ export const getJobsHandler: Middleware = async (ctx) => {
 
   metricsClient.increment('job.reads', jobs.length);
 
-  ctx.body = jobs;
+  return reply.code(200).send(jobs);
 };

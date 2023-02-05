@@ -1,11 +1,12 @@
+import { RouteHandler } from 'fastify';
+
 import { smokeTestJobStorage } from 'src/storage/jobs';
-import { Middleware } from 'src/types/koa';
 
 /**
  * Tests connectivity to ensure appropriate access and network configuration.
  */
-export const smokeTestHandler: Middleware = async (ctx) => {
+export const smokeTestHandler: RouteHandler = async (_req, reply) => {
   await Promise.all([smokeTestJobStorage()]);
 
-  ctx.body = 'Smoke test passed';
+  return reply.code(200).send('Smoke test passed');
 };

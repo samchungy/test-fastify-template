@@ -1,21 +1,28 @@
-import { agentFromApp } from 'src/testing/server';
-
-import app from './app';
-
-const agent = agentFromApp(app);
+import createApp from './app';
+import { agentFromApp } from './testing/server';
 
 describe('app', () => {
-  it('exports callback for skuba start', () =>
-    expect(app).toHaveProperty('callback'));
+  it('exports server for skuba start', async () => {
+    const app = await createApp;
+    expect(app).toHaveProperty('server');
+  });
 
-  it('has a happy health check', () => agent.get('/health').expect(200, ''));
+  it('has a happy health check', async () => {
+    const app = await createApp;
+    await agentFromApp(app).get('/health').expect(200, '');
+  });
 
-  it('has a reachable smoke test', () =>
-    agent.get('/smoke').expect(({ status }) => status !== 404));
+  it('has a reachable smoke test', async () => {
+    const app = await createApp;
+    await agentFromApp(app)
+      .get('/smoke')
+      .expect(({ status }) => status !== 404);
+  });
 
-  it('has a reachable nested route', () =>
-    agent.get('/jobs').expect(({ status }) => status !== 404));
-
-  it('has OPTIONS for a nested route', () =>
-    agent.options('/jobs').expect(200).expect('allow', /HEAD/));
+  it('has a reachable nested route', async () => {
+    const app = await createApp;
+    await agentFromApp(app)
+      .get('/jobs')
+      .expect(({ status }) => status !== 404);
+  });
 });

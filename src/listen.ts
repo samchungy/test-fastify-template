@@ -4,14 +4,17 @@ import app from './app';
 import { config } from './config';
 import { logger } from './framework/logging';
 
-// This implements a minimal version of `koa-cluster`'s interface
-// If your application is deployed with more than 1 vCPU you can delete this
-// file and use `koa-cluster` to run `lib/app`.
-
-const listener = app.listen(config.port, () => {
-  const address = listener.address();
-
-  if (typeof address === 'object' && address) {
-    logger.debug(`listening on port ${address.port}`);
-  }
-});
+app
+  .then((server) => {
+    server.listen({ port: config.port }, (err) => {
+      if (err) {
+        throw err;
+      }
+      logger.debug(`listening on port ${server.addresses()[0].port}`);
+    });
+  })
+  .catch((err) => {
+    logger.error(err, 'Server failed to start');
+    // eslint-disable-next-line no-process-exit
+    process.exit(1);
+  });

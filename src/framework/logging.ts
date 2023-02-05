@@ -1,12 +1,8 @@
 import createLogger from '@seek/logger';
-import { RequestLogging } from 'seek-koala';
 
 import { config } from 'src/config';
 
-const { createContextMiddleware, mixin } =
-  RequestLogging.createContextStorage();
-
-export const contextMiddleware = createContextMiddleware();
+import { contextStorage } from './context';
 
 export const logger = createLogger({
   base: {
@@ -14,7 +10,7 @@ export const logger = createLogger({
     version: config.version,
   },
 
-  mixin,
+  mixin: () => ({ ...contextStorage.getStore()?.loggerFields }),
 
   level: config.logLevel,
 

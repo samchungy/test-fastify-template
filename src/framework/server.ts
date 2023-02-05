@@ -1,51 +1,21 @@
-import Koa from 'koa';
-import compose from 'koa-compose';
-import {
-  ErrorMiddleware,
-  MetricsMiddleware,
-  RequestLogging,
-  // SecureHeaders,
-  VersionMiddleware,
-} from 'seek-koala';
+import { FastifyPluginAsync, FastifyPluginCallback, fastify } from 'fastify';
 
-import { config } from 'src/config';
-import { contextMiddleware, logger } from 'src/framework/logging';
-import { metricsClient } from 'src/framework/metrics';
+import { contextHook } from './context';
+import { errorHandler } from './error';
+import { errorLoggingHook, responseLoggingHook, versionHook } from './hooks';
 
-const metrics = MetricsMiddleware.create(
-  metricsClient,
-  ({ _matchedRoute }) => ({
-    route: typeof _matchedRoute === 'string' ? _matchedRoute : 'unspecified',
-  }),
-);
+export const createApp = async (
+  ...plugins: (FastifyPluginAsync | FastifyPluginCallback)[]
+) => {
+  const server = fastify();
+  server.setErrorHandler(errorHandler);
 
-const requestLogging = RequestLogging.createMiddleware((ctx, fields, err) => {
-  if (ctx.status < 400 && err === undefined) {
-    // Depend on sidecar logging for happy path requests
-    return;
-  }
+  server.addHook('onRequest', contextHook);
+  server.addHook('onError', errorLoggingHook);
+  server.addHook('onSend', versionHook);
+  server.addHook('onResponse', responseLoggingHook);
 
-  return ctx.status < 500
-    ? logger.info(fields, 'Client error')
-    : logger.error(fields, 'Server error');
-});
-
-const version = VersionMiddleware.create({
-  name: config.name,
-  version: config.version,
-});
-
-export const createApp = <State, Context>(
-  ...middleware: Koa.Middleware<State, Context>[]
-) =>
-  new Koa()
-    // TODO: consider using a middleware that adds secure HTTP headers.
-    // https://github.com/seek-oss/koala/tree/master/src/secureHeaders
-    // https://github.com/venables/koa-helmet
-    // .use(SecureHeaders.middleware)
-    .use(contextMiddleware)
-    .use(requestLogging)
-    .use(metrics)
-    .use(ErrorMiddleware.handle)
-    .use(version)
-    .use(compose(middleware));
+  await Promise.all(plugins.map((plugin) => server.register(plugin)));
+  await server.ready();
+  return server;
+};

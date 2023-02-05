@@ -1,31 +1,24 @@
-import Router from '@koa/router';
-import Koa from 'koa';
+import {
+  FastifyInstance,
+  FastifyPluginAsync,
+  FastifyPluginCallback,
+} from 'fastify';
 import request from 'supertest';
 
 import { createApp } from 'src/framework/server';
 
 /**
- * Create a new SuperTest agent from a Koa application.
+ * Create a new SuperTest agent from a Fastify application.
  */
-export const agentFromApp = <State, Context>(app: Koa<State, Context>) =>
-  request.agent(app.callback());
+export const agentFromApp = (app: FastifyInstance) => request.agent(app.server);
 
 /**
- * Create a new SuperTest agent from a set of Koa middleware.
+ * Create a new SuperTest agent from a set of Fastify plugins.
  */
-export const agentFromMiddleware = <State, Context>(
-  ...middleware: Koa.Middleware<State, Context>[]
+export const agentFromPlugins = async (
+  ...plugins: (FastifyPluginAsync | FastifyPluginCallback)[]
 ) => {
-  const app = createApp(...middleware);
-
-  return agentFromApp(app);
-};
-
-/**
- * Create a new SuperTest agent from a Koa router.
- */
-export const agentFromRouter = (router: Router) => {
-  const app = createApp(router.routes(), router.allowedMethods());
+  const app = await createApp(...plugins);
 
   return agentFromApp(app);
 };

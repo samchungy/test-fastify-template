@@ -10,8 +10,8 @@ export interface Job {
 
 export type JobInput = z.infer<typeof JobInputSchema>;
 
-export const JobInputSchema = z.object({
-  hirer: z.object({
+export const JobInputSchema = z.strictObject({
+  hirer: z.strictObject({
     id: z.string(),
   }),
 });

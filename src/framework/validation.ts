@@ -49,10 +49,9 @@ export const validate = <
 }): Output => {
   const parseResult = schema.safeParse(input);
   if (parseResult.success === false) {
-    throw new Error('test');
-    // throw new JsonResponse(422, 'Input validation failed', {
-    //   invalidFields: parseInvalidFieldsFromError(parseResult.error),
-    // });
+    throw new JsonResponse(422, 'Input validation failed', {
+      invalidFields: parseInvalidFieldsFromError(parseResult.error),
+    });
   }
   return parseResult.data;
 };
